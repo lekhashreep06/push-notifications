@@ -1,0 +1,104 @@
+<html>
+    <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+            <meta name="google-site-verification" content="Djp8V7hr5895TRr7LgunBWeBpk6NSZ4x0lSWJ0i8gsc" />
+            <link rel="manifest" href="/manifest.json" />
+            <title>Web API Example</title></head>
+    <body>
+        <span id="welcomemsg">If you see this AFTER you accepted Permissions you should refresh the page.</span>
+    <script>
+
+var vapidPublicKey =urlBase64ToUint8Array("BElOKiYD6M0yOWy-phNZee8lgMhYHIbib_GJmsAFlwIRPTmEXoNn6BehTFVbWeLSEpecTpUmhaj7TW0EC30g4Fo");
+
+    // Let's check if the browser supports notifications
+if (!("Notification" in window)) {
+  alert("This browser does not support desktop notification. This Demo has failed :( ");
+  document.getElementById("welcomemsg").innerHTML = "This browser does not support desktop notification. This Demo has failed :( ";
+}
+else {
+
+    Notification.requestPermission(
+    function(status) {
+        console.log('Notification Permissiong status:',status);
+    });
+    
+    if (Notification.permission === 'denied' )
+    { 
+        // fail early
+        document.getElementById("welcomemsg").innerHTML = "You've denied notification on a notifcation DEMO! I'm sad!";
+    } {
+        
+        // We are a go. Everything is ready. 
+        // We've asked for notificaiton permissiongs. And we've been given it.
+        // Time to register our service worker to listen for notifications and pop them up when we receive them from the server.
+
+        // Register the serviceWorker script at /serviceworker.js from our server if supported
+        if (navigator.serviceWorker) { // yes this browser has a serviceWorker functionality.
+        
+            // Register and get the notification details and send them to our back end server.
+                navigator.serviceWorker.register('/serviceworker.js')
+               .then(function(registration) {
+                     const subscribeOptions = {
+                       userVisibleOnly: true,
+                       applicationServerKey: urlBase64ToUint8Array(
+                                               'BJlEoQeG_Z5umiIhGawf4scU-qF6xprAYbeN18g7dg7Wr89gwcff-Ns47Tw3u307r9eCBm8KAYWDe-SExffdSF0'
+                                             )
+                     };
+                 
+                     return registration.pushManager.subscribe(subscribeOptions);
+               })
+               .then(function(pushSubscription) {
+                   PostSubscriptionDetails(pushSubscription);
+               });
+
+
+
+
+        } // end if (navigator.serviceWorker) {
+        
+        
+    }
+    
+}
+
+function PostSubscriptionDetails(Subscription) {
+    
+    var sub = JSON.parse(JSON.stringify(Subscription));
+    
+    var token = sub.keys.p256dh;
+    var auth = sub.keys.auth;
+    var fields = {endpoint:sub.endpoint,token:token,auth:auth};
+
+    fetch('/newbrowser', {
+        method: 'POST',
+        headers: new Headers({'Content-Type': 'application/json'}),
+        body: JSON.stringify(fields)
+    }).then(function(data) {
+        console.log("returned from server:");
+	    console.log(data);
+        document.getElementById("welcomemsg").innerHTML = "READY for Notifications!";
+        // Todo. Save anything you needed when you "regsitered" with the server and told him how to notify you.
+    });
+    
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding)
+    .replace(/\-/g, '+')
+    .replace(/_/g, '/')
+  ;
+  const rawData = window.atob(base64);
+  return Uint8Array.from([...rawData].map((char) => char.charCodeAt(0)));
+}
+
+    
+    
+    
+ 
+
+
+
+    </script>
+    </body>
+</html>
