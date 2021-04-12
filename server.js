@@ -59,14 +59,14 @@ app.post('/newbrowser',function(req,res){
 
 
 
-app.get('/notify',function(req,res) { 
+app.get('/notifications',function(req,res) { 
 // Let ALL browsers pop up a message
   // console.log(" We've been notified. Now send notification to all browsers");
    
    var options = {
        TTL: 24 * 60 * 60,
        vapidDetails: {
-         subject: 'mailto:damian@bocajs.com',
+         subject: 'mailto:lekhashree.pandit@softwareag.com',
          publicKey: vapidPublicKey,
          privateKey: vapidPrivateKey
        }
